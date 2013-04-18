@@ -14,14 +14,17 @@ from django.core.exceptions import ImproperlyConfigured
 from django.core.urlresolvers import reverse, NoReverseMatch
 from django.contrib.sites.models import Site
 from django.db import models
-from django.db.transaction import commit_on_success
+from django.db import transaction
 from django.utils.translation import ugettext_lazy as _
 from polymorphic_tree.models import PolymorphicMPTTModel, PolymorphicMPTTModelBase
 from fluent_pages.models.fields import TemplateFilePathField, PageTreeForeignKey
 from fluent_pages.models.managers import UrlNodeManager
 from fluent_pages import appsettings
 from fluent_pages.utils.compat import get_user_model_name
-
+try:
+    transaction_atomic = transaction.atomic
+except AttributeError:
+    transaction_atomic = transaction.commit_on_success
 
 def _get_current_site():
     return Site.objects.get_current()
@@ -242,7 +245,7 @@ class UrlNode(PolymorphicMPTTModel):
     # ---- Custom behavior ----
 
     # This code runs in a transaction since it's potentially editing a lot of records (all decendant urls).
-    @commit_on_success
+    @transaction_atomic
     def save(self, *args, **kwargs):
         """
         Save the model, and update caches.
