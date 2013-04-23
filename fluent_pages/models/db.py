@@ -21,10 +21,13 @@ from fluent_pages.models.fields import TemplateFilePathField, PageTreeForeignKey
 from fluent_pages.models.managers import UrlNodeManager
 from fluent_pages import appsettings
 from fluent_pages.utils.compat import get_user_model_name
+
+
 try:
     transaction_atomic = transaction.atomic
 except AttributeError:
     transaction_atomic = transaction.commit_on_success
+
 
 def _get_current_site():
     return Site.objects.get_current()
